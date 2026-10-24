@@ -1,0 +1,20 @@
+CREATE TABLE schedules (
+  id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  route_id bigint(20) unsigned NOT NULL,
+  bus_id bigint(20) unsigned NOT NULL,
+  driver_id bigint(20) unsigned DEFAULT NULL,
+  departure_time datetime NOT NULL,
+  arrival_time datetime NOT NULL,
+  price decimal(10,2) NOT NULL,
+  status enum('scheduled','departed','completed','cancelled') NOT NULL DEFAULT 'scheduled',
+  created_at datetime NOT NULL DEFAULT current_timestamp(),
+  updated_at datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (id),
+  KEY fk_sched_bus (bus_id),
+  KEY fk_sched_driver (driver_id),
+  KEY idx_sched_departure (departure_time),
+  KEY idx_sched_route_time (route_id,departure_time),
+  CONSTRAINT fk_sched_bus FOREIGN KEY (bus_id) REFERENCES buses (id),
+  CONSTRAINT fk_sched_driver FOREIGN KEY (driver_id) REFERENCES drivers (id) ON DELETE SET NULL,
+  CONSTRAINT fk_sched_route FOREIGN KEY (route_id) REFERENCES routes (id)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci

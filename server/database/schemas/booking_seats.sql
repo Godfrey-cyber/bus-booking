@@ -1,0 +1,22 @@
+CREATE TABLE booking_seats (
+	  id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+	  booking_id bigint(20) unsigned NOT NULL,
+	  seat_id bigint(20) unsigned NOT NULL,
+	  trip_id bigint(20) unsigned NOT NULL,
+	  passenger_name varchar(120) NOT NULL,
+	  passenger_age tinyint(3) unsigned DEFAULT NULL,
+	  passenger_gender enum('male','female','other') DEFAULT NULL,
+	  schedule_seat_id bigint(20) unsigned NOT NULL,
+	  price decimal(10,2) NOT NULL,
+	  created_at datetime NOT NULL DEFAULT current_timestamp(),
+	  PRIMARY KEY (id),
+	  UNIQUE KEY uq_booking_seat (booking_id, seat_id, trip_id, schedule_seat_id),
+	  KEY idx_booking_seats_booking (booking_id),
+	  KEY idx_booking_seats_seat (seat_id),
+	  KEY idx_booking_seats_trip (trip_id),
+	  KEY idx_booking_schedule_seat (schedule_seat_id),
+	  CONSTRAINT fk_booking_seats_booking FOREIGN KEY (booking_id) REFERENCES bookings (id) ON DELETE CASCADE,
+	  CONSTRAINT fk_booking_seats_seat FOREIGN KEY (seat_id) REFERENCES bus_seats (id),
+	  CONSTRAINT fk_booking_seats_trip FOREIGN KEY (trip_id) REFERENCES trips (id),
+	  CONSTRAINT fk_bs_seat_schedule FOREIGN KEY (schedule_seat_id) REFERENCES schedule_seats (id)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci

@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand palette */
+  --color-fleet-yellow: #FFC629;
+  --color-fleet-yellow-dark: #E6AD0E;
+  --color-fleet-black: #0B0B0C;
+  --color-fleet-charcoal: #1F2023;
+  --color-fleet-gray: #6B6D76;
+  --color-fleet-light: #F5F5F4;
+  --color-fleet-white: #FFFFFF;
+
+  /* State colors */
+  --color-state-success: #1B8A5A;
+  --color-state-error: #D6432B;
+  --color-state-warning: #B9760A;
+  --color-state-info: #2563EB;
+
+  /* Fonts */
+  --font-display: "Space Grotesk", "system-ui", sans-serif;
+  --font-body: "Inter", "system-ui", sans-serif;
+  --font-mono: "IBM Plex Mono", "ui-monospace", monospace;
+
+  /* Radius */
+  --radius-ticket: 1.25rem;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: var(--color-fleet-light);
+    color: var(--color-fleet-black);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-fleet-yellow-dark);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Ticket stub divider — perforated edge motif used across booking/ticket UI */
+  .ticket-perforation {
+    background-image: radial-gradient(circle, var(--color-fleet-light) 3px, transparent 3px);
+    background-size: 14px 14px;
+    background-position: center;
+    background-repeat: repeat-x;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .select-reset {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-fleet-black);
+    outline: none;
+  }
+}

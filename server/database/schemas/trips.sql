@@ -1,0 +1,25 @@
+CREATE TABLE trips (
+  id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  schedule_id bigint(20) unsigned NOT NULL,
+  bus_id bigint(20) unsigned NOT NULL,
+  driver_id bigint(20) unsigned DEFAULT NULL,
+  trip_date date NOT NULL,
+  departure_time datetime NOT NULL,
+  arrival_time datetime NOT NULL,
+  price decimal(10,2) NOT NULL,
+  status enum('scheduled','commenced','completed','cancelled') NOT NULL DEFAULT 'scheduled',
+  route_id bigint(20) unsigned NOT NULL,
+  created_at datetime NOT NULL DEFAULT current_timestamp(),
+  updated_at datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_schedule_date (schedule_id,trip_date),
+  KEY fk_trip_bus (bus_id),
+  KEY fk_trip_driver (driver_id),
+  KEY fk_trip_route (route_id),
+  KEY idx_trip_departure (departure_time),
+  KEY idx_trip_status (status),
+  CONSTRAINT fk_trip_bus FOREIGN KEY (bus_id) REFERENCES buses (id),
+  CONSTRAINT fk_trip_driver FOREIGN KEY (driver_id) REFERENCES drivers (id) ON DELETE SET NULL,
+  CONSTRAINT fk_trip_schedule FOREIGN KEY (schedule_id) REFERENCES schedules (id)
+  CONSTRAINT fk_trip_route FOREIGN KEY (route_id) REFERENCES routes (id)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci

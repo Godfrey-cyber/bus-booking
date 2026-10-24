@@ -1,0 +1,38 @@
+// Central route path constants — single source of truth for navigation and route config.
+export const ROUTES = {
+  HOME: '/',
+  SEARCH: '/search',
+  BUS_DETAILS: '/buses/:busId',
+  SEAT_SELECTION: '/booking/:busId/seats',
+  CHECKOUT: '/booking/:busId/checkout',
+  PAYMENT: '/booking/:busId/payment',
+  TICKET: '/tickets/:bookingId',
+  MY_BOOKINGS: '/my-bookings',
+  REFUND: '/refund/:bookingId',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
+  PROFILE: '/profile',
+  NOTIFICATIONS: '/notifications',
+
+  PASSENGER_DASHBOARD: '/dashboard',
+  OPERATOR_DASHBOARD: '/operator',
+  OPERATOR_BUSES: '/operator/buses',
+  OPERATOR_SCHEDULES: '/operator/schedules',
+  OPERATOR_ROUTES: '/operator/routes',
+  OPERATOR_BOOKINGS: '/operator/bookings',
+  OPERATOR_SCAN: '/operator/scan',
+  OPERATOR_REPORTS: '/operator/reports',
+
+  ADMIN_DASHBOARD: '/admin',
+  ADMIN_OPERATORS: '/admin/operators',
+  ADMIN_BOOKINGS: '/admin/bookings',
+  ADMIN_REFUNDS: '/admin/refunds',
+  ADMIN_PAYMENTS: '/admin/payments',
+  ADMIN_ANALYTICS: '/admin/analytics',
+  ADMIN_SETTINGS: '/admin/settings',
+
+  UNAUTHORIZED: '/unauthorized',
+  NOT_FOUND: '*',
+}

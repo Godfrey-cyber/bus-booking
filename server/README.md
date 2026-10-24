@@ -1,0 +1,2 @@
+# searchBuses → GET /buses/all-buses/?origin=...&destination=...&amenities=ac,wifi&sortBy=
+	-  filters go out as query params so the backend can eventually do the filtering server-side; a applyFiltersAndSort pass still runs client-side as a safety net (harmless if the backend already filtered, correct if it hasn't yet).

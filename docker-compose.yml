@@ -1,0 +1,50 @@
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: mariadb-fleet-db
+    restart: always
+    env_file:
+      - ./server/.env.development
+    ports:
+      - "3032:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+  # client
+  client:
+    build: ./client
+    depends_on:
+      - api
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./client/.env.development
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+      
+  # api container
+  api:
+    container_name: fleet-api
+    depends_on:
+      - mariadb
+      # - redis
+    build: ./server
+    ports:
+      - 8000:8000
+    env_file:
+      - ./server/.env.development
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    command: npm run dev
+    develop:
+      watch:
+        - path: ./server/package.json
+          action: rebuild
+        - path: ./server/package-lock.json
+          action: rebuild
+        - path: ./server
+          target: /app
+          action: sync
+volumes:
+  mariadb_data:

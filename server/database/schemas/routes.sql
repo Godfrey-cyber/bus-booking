@@ -1,0 +1,22 @@
+CREATE TABLE routes (
+    id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    operator_id bigint(20) unsigned NOT NULL,
+    origin_id bigint(20) unsigned NOT NULL,
+    destination_id bigint(20) unsigned NOT NULL,
+    distance_km smallint(5) unsigned DEFAULT NULL,
+    duration_minutes smallint(5) unsigned NOT NULL,
+    base_price decimal(10,2) NOT NULL,
+    boarding_point varchar(160) DEFAULT NULL,
+    arrival_point varchar(160) DEFAULT NULL,
+    status enum('active','inactive') NOT NULL DEFAULT 'active',
+    created_at datetime NOT NULL DEFAULT current_timestamp(),
+    updated_at datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+    deleted_at datetime DEFAULT NULL,
+    PRIMARY KEY (id),
+    KEY fk_routes_operator (operator_id),
+    KEY fk_routes_destination (destination_id),
+    KEY idx_routes_search (origin_id,destination_id),
+    CONSTRAINT fk_routes_destination FOREIGN KEY (destination_id) REFERENCES locations (id),
+    CONSTRAINT fk_routes_operator FOREIGN KEY (operator_id) REFERENCES operators (id) ON DELETE CASCADE,
+    CONSTRAINT fk_routes_origin FOREIGN KEY (origin_id) REFERENCES locations (id)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci
