@@ -25,15 +25,19 @@ export const BusModel = {
     getOperatorBuses: async (operatorID, { limit = 20, offset = 0 }) => {
         const dataSql = `
             SELECT 
-                id,
-                plate_number,
-                model,
-                capacity,
-                status,
-                operator_id,
-                created_at
-            FROM buses
-            WHERE operator_id = ?
+                b.id,
+                b.plate_number,
+                d.name,
+                b.model,
+                b.capacity,
+                b.status,
+                b.operator_id,
+                b.created_at
+            FROM buses b
+            LEFT JOIN drivers d ON
+            b.operator_id = d.operator_id
+            AND b.id = d.bus_id
+            WHERE b.operator_id = ?
             ORDER BY created_at DESC
             LIMIT ? OFFSET ?
         `;

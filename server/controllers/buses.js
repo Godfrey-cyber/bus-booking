@@ -120,8 +120,7 @@ export const operatorBuses = async (req, res) => {
             limit,
             offset
         });
-        console.log("data", buses)
-        console.log("total", total)
+        
         return res.status(200).json({
             success: true,
             message: 'Operator Buses retrieved successfully',
