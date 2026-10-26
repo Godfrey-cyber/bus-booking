@@ -51,16 +51,26 @@ export const driversApi = apiSlice.injectEndpoints({
                 : [{ type: 'Drivers', id: 'LIST' }],
         }),
 
+        // getOperatorDrivers: builder.query({
+        //     query: ({ userId }) => '/drivers/operator-drivers',
+        //     transformResponse: (response) => unwrapItem(response),
+        //     providesTags: (result) =>
+        //         Array.isArray(result)
+        //         ? [
+        //             ...result.map(({ id }) => ({ type: 'Drivers', id })),
+        //               { type: 'Drivers', id: 'MY_DRIVERS' },
+        //             ]
+        //         : [{ type: 'Drivers', id: 'MY_BUSES' }],
+        // }),
+
         getOperatorDrivers: builder.query({
-            query: () => '/drivers/operator-drivers',
+            query: ({ userId }) => ({ 
+                url: '/drivers/operator-drivers', 
+                method: 'GET',
+                params: { userId },
+            }),
             transformResponse: (response) => unwrapItem(response),
-            providesTags: (result) =>
-                Array.isArray(result)
-                ? [
-                    ...result.map(({ id }) => ({ type: 'Drivers', id })),
-                      { type: 'Drivers', id: 'MY_DRIVERS' },
-                    ]
-                : [{ type: 'Drivers', id: 'MY_BUSES' }],
+            providesTags: (result, error, userId) => [{ type: 'Drivers', id: userId }],
         }),
         
         getDriverById: builder.query({
@@ -72,7 +82,7 @@ export const driversApi = apiSlice.injectEndpoints({
         // POST /driver — creates a new driver and invalidates list cache
         createDriver: builder.mutation({
             query: (newBusData) => ({
-                url: '/drivers',
+                url: '/drivers/new-driver',
                 method: 'POST',
                 body: newBusData,
             }),

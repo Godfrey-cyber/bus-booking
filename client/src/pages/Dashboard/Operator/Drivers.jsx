@@ -8,39 +8,68 @@ import ConfirmDialog from '../../../components/common/ConfirmDialog'
 import FormField, { inputClasses } from '../../../components/forms/FormField'
 import { OPERATOR_DRIVERS, OPERATOR_BUSES } from '../../../mock/operatorData'
 import { useToast } from '../../../hooks/useToast'
-import { useSearchDriversQuery } from '../../../redux/services/driversApi'
-// 
-
-const busLabel = (busId) => OPERATOR_BUSES.find((b) => b.id === busId)?.plate ?? 'Unassigned'
+import { useAuth } from '../../../hooks/useAuth'
+import { useSearchDriversQuery, useGetOperatorDriversQuery, useCreateDriverMutation } from '../../../redux/services/driversApi'
+import { useGetOperatorBusesQuery } from '../../../redux/services/busesApi'
 
 export default function OperatorDrivers() {
-    const { data: driversData, isLoading } = useSearchDriversQuery();
-    const [drivers, setDrivers] = useState(OPERATOR_DRIVERS)
+    const { user } = useAuth()
+    // const { data: driversData, isLoading } = useSearchDriversQuery();
+    const { data: operatorDrivers, isLoading } = useGetOperatorDriversQuery(user?.id)
+    const [createDriver, { isLoading: isCreating }] = useCreateDriverMutation()
+    const { data: operatorBuses, loading } = useGetOperatorBusesQuery(user?.id)
+    const [drivers, setDrivers] = useState([])
     const [editing, setEditing] = useState(null)
     const [deleteTarget, setDeleteTarget] = useState(null)
     const toast = useToast()
 
-    console.log("driversData", driversData);
+    console.log("operatorDrivers", operatorDrivers);
+    console.log("drivers", drivers);
+    const busLabel = (busId) => operatorBuses?.find((b) => b.id === busId)?.plate_number ?? 'Unassigned'
 
   const { register, handleSubmit, reset } = useForm({
-    values: editing?.id ? editing : { name: '', license: '', phone: '' },
+    values: editing?.id ? editing : { name: '', license_number: '', phone: '', bus_id: '' },
   })
 
   const openNew = () => {
-    reset({ name: '', license: '', phone: '' })
+    reset({ name: '', license_number: '', phone: '', bus_id: '' })
     setEditing({})
   }
 
-  const onSubmit = (values) => {
-    if (editing?.id) {
-      setDrivers((prev) => prev.map((d) => (d.id === editing.id ? { ...d, ...values } : d)))
-      toast.success('Driver updated.')
-    } else {
-      setDrivers((prev) => [...prev, { id: `od${Date.now()}`, ...values }])
-      toast.success('Driver added.')
+  // const onSubmit = (values) => {
+  //   if (editing?.id) {
+  //     setDrivers((prev) => prev.map((d) => (d.id === editing.id ? { ...d, ...values } : d)))
+  //     toast.success('Driver updated.')
+  //   } else {
+  //     setDrivers((prev) => [...prev, { id: `od${Date.now()}`, ...values }])
+  //     toast.success('Driver added.')
+  //   }
+  //   setEditing(null)
+  // }
+
+  const onSubmit = async (values) => {
+        const payload = {
+            name: values.name,
+            license_number: values.license_number,
+            phone: values.phone,
+            bus_id: values.bus_id
+        }
+
+        try {
+            if (editing?.id) {
+                // Handle update mutation here when ready
+                toast.success('Driver updated successfully.')
+            } else {
+                await createDriver(payload).unwrap()
+                toast.success('Driver added to your fleet.')
+            }
+            setEditing(null)
+        } catch (error) {
+            console.log(error)
+            console.error('Failed to save bus:', error)
+            toast.error(error?.data?.message || 'Failed to save bus.')
+        }
     }
-    setEditing(null)
-  }
 
   const confirmDelete = () => {
     setDrivers((prev) => prev.filter((d) => d.id !== deleteTarget.id))
@@ -50,9 +79,10 @@ export default function OperatorDrivers() {
 
   const columns = [
     { key: 'name', label: 'Name' },
-    { key: 'license', label: 'License no.' },
+    { key: 'license_number', label: 'License no.' },
     { key: 'phone', label: 'Phone' },
-    { key: 'bus', label: 'Assigned bus', render: (row) => busLabel(row.assignedBusId) },
+    { key: 'status', label: 'Status' },
+    { key: 'plate_number', label: 'Assigned bus', render: (row) => busLabel(row.bus_id) },
     {
       key: 'actions',
       label: '',
@@ -82,7 +112,7 @@ export default function OperatorDrivers() {
       </div>
 
       <div className="mt-6">
-        <DataTable columns={columns} rows={drivers} emptyLabel="No drivers yet" />
+        <DataTable columns={columns} rows={operatorDrivers} emptyLabel="No drivers yet" />
       </div>
 
       <Modal isOpen={!!editing} onClose={() => setEditing(null)} title={editing?.id ? 'Edit driver' : 'Add driver'}>
@@ -90,18 +120,18 @@ export default function OperatorDrivers() {
           <FormField label="Full name" htmlFor="name">
             <input id="name" className={inputClasses(false)} {...register('name', { required: true })} />
           </FormField>
-          <FormField label="License number" htmlFor="license">
-            <input id="license" className={inputClasses(false)} {...register('license', { required: true })} />
+          <FormField label="License number" htmlFor="license_number">
+            <input id="license_number" className={inputClasses(false)} {...register('license_number', { required: true })} />
           </FormField>
           <FormField label="Phone" htmlFor="phone">
             <input id="phone" className={inputClasses(false)} {...register('phone', { required: true })} />
           </FormField>
-          <FormField label="Assigned bus" htmlFor="assignedBusId">
-            <select id="assignedBusId" className={inputClasses(false)} {...register('assignedBusId')}>
+          <FormField label="Assigned bus" htmlFor="bus_id">
+            <select id="bus_id" className={inputClasses(false)} {...register('bus_id')}>
               <option value="">Unassigned</option>
-              {OPERATOR_BUSES.map((b) => (
+              {operatorBuses?.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.plate} — {b.model}
+                  {b.plate_number} — {b.model} — {b.name}
                 </option>
               ))}
             </select>
@@ -112,15 +142,15 @@ export default function OperatorDrivers() {
         </form>
       </Modal>
 
-      <ConfirmDialog
-        isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={confirmDelete}
-        title="Remove this driver?"
-        description={`${deleteTarget?.name ?? 'This driver'} will be removed from your roster.`}
-        confirmLabel="Remove"
-        isDangerous
-      />
+        <ConfirmDialog
+            isOpen={!!deleteTarget}
+            onClose={() => setDeleteTarget(null)}
+            onConfirm={confirmDelete}
+            title="Remove this driver?"
+            description={`${deleteTarget?.name ?? 'This driver'} will be removed from your roster.`}
+            confirmLabel="Remove"
+            isDangerous
+        />
     </div>
   )
 }
