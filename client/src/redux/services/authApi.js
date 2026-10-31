@@ -70,5 +70,5 @@ export const {
     useOperatorMutation,
     useRegisterPassengerMutation,
     useGetOperatorsQuery,
-    // useResetPasswordMutation,
+    useResetPasswordMutation,
 } = authApi
