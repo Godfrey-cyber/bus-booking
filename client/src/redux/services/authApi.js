@@ -49,18 +49,18 @@ export const authApi = apiSlice.injectEndpoints({
             : [{ type: 'Users', id: 'LIST' }],
     }),
 
-        // forgotPassword: builder.mutation({
-        //     queryFn: async ({ email }) => {
-        //         await delay(600)
-        //         return { data: { message: `If an account exists for ${email}, a reset link has been sent.` } }
-        //     },
-        // }),
-        // resetPassword: builder.mutation({
-        //     queryFn: async () => {
-        //         await delay(600)
-        //         return { data: { message: 'Password updated successfully.' } }
-        //     },
-        // }),
+        forgotPassword: builder.mutation({
+            queryFn: async ({ email }) => {
+                await delay(600)
+                return { data: { message: `If an account exists for ${email}, a reset link has been sent.` } }
+            },
+        }),
+        resetPassword: builder.mutation({
+            queryFn: async () => {
+                await delay(600)
+                return { data: { message: 'Password updated successfully.' } }
+            },
+        }),
     }),
 })
 
@@ -71,4 +71,5 @@ export const {
     useRegisterPassengerMutation,
     useGetOperatorsQuery,
     useResetPasswordMutation,
+    useForgotPasswordMutation
 } = authApi
