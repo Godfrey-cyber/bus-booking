@@ -9,7 +9,7 @@ const routesSlice = createSlice({
   initialState,
   reducers: {
     setPopularRoutes(state, action) {
-      state.popularRoutes = action.payload
+        state.popularRoutes = action.payload
     },
   },
 })

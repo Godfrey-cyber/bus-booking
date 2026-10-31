@@ -10,21 +10,36 @@ import FormField, { inputClasses } from '../../../components/forms/FormField'
 import { OPERATOR_SCHEDULES, OPERATOR_ROUTES, OPERATOR_BUSES } from '../../../mock/operatorData'
 import { formatDate, formatTime } from '../../../utils/format'
 import { useToast } from '../../../hooks/useToast'
+import { useGetOperatorDestinationsQuery } from '../../../redux/services/destinationsApi'
+import { useGetOperatorBusesQuery } from '../../../redux/services/busesApi'
+import { selectCurrentUser } from '../../../redux/features/auth/authSlice'
+import { useAuth } from '../../../hooks/useAuth'
 
 const STATUS_TONE = { scheduled: 'info', departed: 'success', cancelled: 'error' }
 
-const routeLabel = (routeId) => {
-  const r = OPERATOR_ROUTES.find((r) => r.id === routeId)
-  return r ? `${r.origin} → ${r.destination}` : '—'
-}
-const busLabel = (busId) => OPERATOR_BUSES.find((b) => b.id === busId)?.plate ?? '—'
-
 export default function OperatorSchedules() {
-  const [schedules, setSchedules] = useState(OPERATOR_SCHEDULES)
+  const { user } = useAuth()
+  const [schedules, setSchedules] = useState(OPERATOR_SCHEDULES) // OperatorSchedules
   const [editing, setEditing] = useState(null)
+  const { data: locationData, isLoading } = useGetOperatorDestinationsQuery()
+  const destinations = Array.isArray(locationData?.data) 
+    ? locationData.data 
+    : Array.isArray(locationData) 
+    ? locationData 
+    : []
+  const { data: operatorBuses, isBusLoading } = useGetOperatorBusesQuery(user?.id)
+
+  console.log("destinations", destinations)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const toast = useToast()
+  const busLabel = (busId) => operatorBuses?.find((b) => b.id === busId)?.plate ?? '—'
+  console.log("operatorBuses", operatorBuses)
+  console.log("destinations", destinations)
 
+    const routeLabel = (routeId) => {
+        const r = OPERATOR_ROUTES.find((r) => r.id === routeId)
+        return r ? `${r.origin} → ${r.destination}` : '—'
+    }
   const { register, handleSubmit, reset } = useForm({
     values: editing?.id
       ? { ...editing, departureTime: editing.departureTime?.slice(0, 16) }
@@ -90,27 +105,40 @@ export default function OperatorSchedules() {
           Add schedule
         </Button>
       </div>
-
+{/*→*/}
       <div className="mt-6">
         <DataTable columns={columns} rows={schedules} emptyLabel="No schedules yet" />
       </div>
 
       <Modal isOpen={!!editing} onClose={() => setEditing(null)} title={editing?.id ? 'Edit schedule' : 'Add schedule'}>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
-          <FormField label="Route" htmlFor="routeId">
-            <select id="routeId" className={inputClasses(false)} {...register('routeId')}>
-              {OPERATOR_ROUTES.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.origin} → {r.destination}
-                </option>
-              ))}
-            </select>
-          </FormField>
+            <div className="grid grid-cols-2 gap-3">
+                <FormField label="Origin" htmlFor="originId">
+                    <select id="originId" className={inputClasses(false)} {...register('originId')}>
+                      <option value="">Unassigned</option>
+                      {destinations?.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.city}
+                        </option>
+                      ))}
+                    </select>
+                  </FormField>
+                  <FormField label="Destination" htmlFor="destinationId">
+                    <select id="destinationId" className={inputClasses(false)} {...register('destinationId')}>
+                        <option value="">Unassigned</option>
+                      {destinations?.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.city}
+                        </option>
+                      ))}
+                    </select>
+                </FormField>
+            </div>
           <FormField label="Bus" htmlFor="busId">
             <select id="busId" className={inputClasses(false)} {...register('busId')}>
-              {OPERATOR_BUSES.map((b) => (
+              {operatorBuses?.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.plate} — {b.model}
+                  {b.plate_number} — {b.model}
                 </option>
               ))}
             </select>

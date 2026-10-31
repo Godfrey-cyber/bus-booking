@@ -1,32 +1,41 @@
 import { apiSlice } from './apiSlice'
 
+function unwrapList(response) {
+    if (Array.isArray(response)) return response
+    return response?.data ?? response?.drivers ?? []
+}
+
+function unwrapItem(response) {
+    return response?.data ?? response?.driver ?? response
+}
+
 export const destinationsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     /**
      * Get paginated destinations for the authenticated operator
      */
     getOperatorDestinations: builder.query({
-      query: ({ page = 1, limit = 20 } = {}) => ({
-        url: '/destinations/all-destinations',
-        method: 'GET',
-        params: { page, limit },
-      }),
+        query: ({ page = 1, limit = 20 } = {}) => ({
+            url: "/locations/operator-locations",
+            method: 'GET',
+            params: { page, limit },
+        }),
       // Provides tags for cache invalidation
-      providesTags: (result) =>
-        result?.data
-          ? [
-              ...result.data.map(({ id }) => ({ type: 'Destinations', id })),
-              { type: 'Destinations', id: 'LIST' },
+        providesTags: (result) =>
+            result?.data
+            ? [
+                ...result.data.map(({ id }) => ({ type: 'Destinations', id })),
+                { type: 'Destinations', id: 'LIST' },
             ]
           : [{ type: 'Destinations', id: 'LIST' }],
     }),
 
-    /**
-     * Create a new destination (Operator only)
-     */
+        /**
+        * Create a new destination (Operator only)
+        */
     createDestination: builder.mutation({
       query: (destinationData) => ({
-        url: '/destinations/new-destination',
+        url: "/locations/new-location",
         method: 'POST',
         body: destinationData,
       }),

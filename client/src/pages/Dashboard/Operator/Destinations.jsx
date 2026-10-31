@@ -33,16 +33,16 @@ export default function OperatorBuses() {
     : Array.isArray(locationData) 
     ? locationData 
     : []
-
+    console.log("destinations", destinations)
     // 3. RTK Query Mutation Hook
   const [createDestination, { isLoading: isCreating }] = useCreateDestinationMutation()
 
   const { register, handleSubmit, reset } = useForm({
-    values: editing?.id ? editing : { city: '', country: '', latitude: '', longitude: '', image: '' },
+    values: editing?.id ? editing : { city: '', country: '', latitude: '', longitude: '' },
   })
 
   const openNew = () => {
-    reset({ city: '', country: '', latitude: '', longitude: '', image: '' })
+    reset({ city: '', country: '', latitude: '', longitude: '' })
     setEditing({})
   }
 
@@ -54,7 +54,7 @@ export default function OperatorBuses() {
         country: values.country,
         latitude: Number(values.latitude),
         longitude: Number(values.longitude),
-        image: values.image,
+        // image: values.image,
         // operator_id: operatorId, // Included automatically from auth user
       }
 
@@ -147,6 +147,9 @@ export default function OperatorBuses() {
               <input id="longitude" type="number" min="1" className={inputClasses(false)} {...register('longitude', { required: true })} />
             </FormField>
           </div>
+          {/*<FormField label="Image" htmlFor="image">
+                <input id="image" className={inputClasses(false)} {...register('image', { required: true })} />
+          </FormField>*/}
           <Button type="submit" className="mt-1 w-full">
             {editing?.id ? 'Save changes' : 'Add destination	'}
           </Button>
