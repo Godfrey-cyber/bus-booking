@@ -6,7 +6,7 @@ export const DestinationModel = {
    */
   create: async ({ operator_id, city, country, latitude, longitude, image }) => {
     const sql = `
-        INSERT INTO destinations (
+        INSERT INTO locations (
             operator_id, 
             city, 
             country, 
@@ -24,7 +24,7 @@ export const DestinationModel = {
         image || null
     ];
 
-    const [result] = await pool.query(sql, params);
+    const result = await pool.query(sql, params);
     return result;
   },
 
@@ -40,22 +40,20 @@ export const DestinationModel = {
         country,
         latitude,
         longitude,
-        image,
-        created_at,
-        updated_at
-      FROM destinations
+        image
+      FROM locations
       WHERE operator_id = ?
-      ORDER BY created_at DESC
+      ORDER BY country DESC
       LIMIT ? OFFSET ?
     `;
 
     const countSql = `
       SELECT COUNT(*) AS total 
-      FROM destinations 
+      FROM locations 
       WHERE operator_id = ?
     `;
 
-    const [rows] = await pool.query(sql, [operatorId, Number(limit), Number(offset)]);
+    const rows = await pool.query(sql, [operatorId, Number(limit), Number(offset)]);
     const [countResult] = await pool.query(countSql, [operatorId]);
 
     return {
@@ -69,7 +67,7 @@ export const DestinationModel = {
    */
   getByIdAndOperator: async (id, operatorId) => {
     const sql = `
-      SELECT * FROM destinations 
+      SELECT * FROM locations 
       WHERE id = ? AND operator_id = ?
       LIMIT 1
     `;

@@ -8,11 +8,11 @@ import { asyncHandler } from '../utilities/asyncHandler.js';
  */
 export const createDestination = async (req, res) => {
   try {
-    const operator_id = req.user.id; // Extracted safely from Auth JWT Token
+    const operator_id = req?.user?.id; // Extracted safely from Auth JWT Token
     const { city, country, latitude, longitude, image } = req.body;
 
     console.log("user_id", req.user.id)
-    console.log("req", req)
+    // console.log("req", req)
 
     const result = await DestinationModel.create({
         operator_id,
@@ -30,14 +30,14 @@ export const createDestination = async (req, res) => {
 
     return res.status(201).json({
         success: true,
-        message: 'Destination created successfully',
+        message: 'Location created successfully',
         data: newDestination
     });
   } catch (error) {
-    console.error('Error creating destination:', error);
+    console.error('Error creating location:', error);
     return res.status(500).json({
         success: false,
-        message: 'Failed to create destination due to an internal server error'
+        message: 'Failed to create location due to an internal server error'
     });
   }
 };
@@ -51,15 +51,16 @@ export const getOperatorDestinations = async (req, res) => {
     try {
         const operator_id = req?.user?.id;
         console.log("req", req?.user?.id)
-        console.log("req", req)
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 20;
         const offset = (page - 1) * limit;
 
-        const { data, total } = await DestinationModel.getByOperatorId(operator_id, {
+        const { data, total } = await DestinationModel.getByOperatorId(operator_id, { 
             limit,
             offset
         });
+
+        console.log("data", data)
 
         return res.status(200).json({
             success: true,

@@ -22,11 +22,7 @@ export const authenticate = asyncHandler(async (req, res, next) => {
 	let payload;
 
 	try {
-	    payload = verifyAccessToken(token);
-	    console.log("_____payload_____")
-	    console.log("payload", payload)
-	    console.log("_____payload_____")
-	    
+	    payload = verifyAccessToken(token);	    
 	} catch (err) {
 	    if (err.name === 'TokenExpiredError') {
 	    	// console.log("err", err)
@@ -66,7 +62,7 @@ export const authenticate = asyncHandler(async (req, res, next) => {
 	    email: account.email || account.contact_email
 	};
 
-	console.log("req.user", req.user)
+	// console.log("req.user", req.user)
 
 	// console.log("req.user", req.user)
 

@@ -17,7 +17,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import tripRoutes from "./routes/tripRoutes.js";
 import seatRoutes from "./routes/seatRoutes.js";
 import scheduleSeatsRoutes from "./routes/scheduleSeatsRoutes.js";
-import destinationRoutes from "./routes/destinationRoutes.js";
+import routeRoutes from "./routes/routeRoutes.js";
 // import bookingRoutes from "./routes/bookingRoutes.js";
 
 // 
@@ -59,7 +59,7 @@ app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/trips", tripRoutes);
 app.use("/api/v1/seats", seatRoutes);
 app.use("/api/v1/trip-seats", scheduleSeatsRoutes);
-app.use("/api/v1/destinations", destinationRoutes);
+app.use("/api/v1/routes", routeRoutes);
 // app.use("/api/v1/bookings", bookingRoutes);
 
 app.use((req, res) => {

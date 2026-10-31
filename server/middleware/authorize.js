@@ -19,15 +19,13 @@ export const authorize = (roles, options = {  }) => {
 
 	return (req, res, next) => {
 	    if (!req.user) {
-	    	console.log("---user--", req.user)
-	    	console.log("---user--", req)
 		    return next(new AppError('Authentication required before role can be checked.', 401, 'AUTH_REQUIRED'));
 	    }
 
 	    if (allowAdmin && req.user.role === 'Admin') {
 	    	return next();
 	    }
-
+	    console.log("req.user.role", req?.user?.role)
 	    if (!allowedRoles.includes(req.user.role)) {
 	      	return next(
 	        	new AppError(`This action requires one of the following roles: ${allowedRoles.join(', ')}.`, 403, 'RBAC_FORBIDDEN')
