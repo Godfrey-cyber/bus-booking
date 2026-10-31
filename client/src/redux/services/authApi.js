@@ -71,4 +71,5 @@ export const {
     useRegisterPassengerMutation,
     useGetOperatorsQuery,
     useResetPasswordMutation,
+    useForgotPasswordMutation
 } = authApi
