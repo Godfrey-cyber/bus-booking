@@ -54,7 +54,7 @@ export const createRoute = async (req, res) => {
 export const getOperatorRoutes = async (req, res) => {
     try {
         const operator_id = req?.user?.id;
-        console.log("req", req?.user?.id)
+        // console.log("req", req?.user?.id)
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 20;
         const offset = (page - 1) * limit;
@@ -76,7 +76,7 @@ export const getOperatorRoutes = async (req, res) => {
             data
         });
     } catch (error) {
-    console.error('Error retrieving operator routes:', error);
+        console.error('Error retrieving operator routes:', error);
         return res.status(500).json({
             success: false,
             message: 'Failed to retrieve routes due to an internal server error'

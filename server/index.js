@@ -18,10 +18,7 @@ import tripRoutes from "./routes/tripRoutes.js";
 import seatRoutes from "./routes/seatRoutes.js";
 import scheduleSeatsRoutes from "./routes/scheduleSeatsRoutes.js";
 import routeRoutes from "./routes/routeRoutes.js";
-// import bookingRoutes from "./routes/bookingRoutes.js";
-
-// 
-
+import scheduleRoutes from "./routes/scheduleRoutes.js";
 
 const app = express();
 
@@ -60,7 +57,7 @@ app.use("/api/v1/trips", tripRoutes);
 app.use("/api/v1/seats", seatRoutes);
 app.use("/api/v1/trip-seats", scheduleSeatsRoutes);
 app.use("/api/v1/routes", routeRoutes);
-// app.use("/api/v1/bookings", bookingRoutes);
+app.use("/api/v1/schedules", scheduleRoutes);
 
 app.use((req, res) => {
     res.status(404).json({
