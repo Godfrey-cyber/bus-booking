@@ -6,6 +6,7 @@ import cartReducer from './features/cart/cartSlice'
 import bookingReducer from './features/booking/bookingSlice'
 import tripsReducer from './features/trips/tripsSlice'
 import busesReducer from './features/buses/busesSlice'
+import schedulesReducer from './features/schedules/schedulesSlice'
 import driversReducer from './features/drivers/driversSlice'
 import destinationsReducer from './features/destinations/destinationsSlice'
 import operatorsReducer from './features/operators/operatorsSlice'
@@ -25,6 +26,7 @@ export const store = configureStore({
         cart: cartReducer,
         booking: bookingReducer,
         buses: busesReducer,
+        schedules: schedulesReducer,
         drivers: driversReducer,
         destinations: destinationsReducer,
         operators: operatorsReducer,

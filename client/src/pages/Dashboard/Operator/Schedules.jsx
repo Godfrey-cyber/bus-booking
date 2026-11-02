@@ -12,87 +12,123 @@ import { formatDate, formatTime } from '../../../utils/format'
 import { useToast } from '../../../hooks/useToast'
 import { useGetOperatorDestinationsQuery } from '../../../redux/services/destinationsApi'
 import { useGetOperatorBusesQuery } from '../../../redux/services/busesApi'
+import { useGetOperatorRoutesQuery } from '../../../redux/services/routesApi'
+import { useGetOperatorSchedulesQuery, useCreateScheduleMutation } from '../../../redux/services/schedulesApi'
 import { selectCurrentUser } from '../../../redux/features/auth/authSlice'
 import { useAuth } from '../../../hooks/useAuth'
 
 const STATUS_TONE = { scheduled: 'info', departed: 'success', cancelled: 'error' }
 
 export default function OperatorSchedules() {
-  const { user } = useAuth()
-  const [schedules, setSchedules] = useState(OPERATOR_SCHEDULES) // OperatorSchedules
-  const [editing, setEditing] = useState(null)
-  const { data: locationData, isLoading } = useGetOperatorDestinationsQuery()
-  const destinations = Array.isArray(locationData?.data) 
-    ? locationData.data 
-    : Array.isArray(locationData) 
-    ? locationData 
-    : []
-  const { data: operatorBuses, isBusLoading } = useGetOperatorBusesQuery(user?.id)
+    const { user } = useAuth()
+    
+    const [editing, setEditing] = useState(null)
+    const { data: locationData, isLoading } = useGetOperatorDestinationsQuery()
+    const { data: schedulesData, isScheduleLoading } = useGetOperatorSchedulesQuery()
+    const [createSchedule, { isLoading: isCreating }] = useCreateScheduleMutation()
+    const { data: routesData, isRoutesLoading } = useGetOperatorRoutesQuery()
+    // const [schedules, setSchedules] = useState(schedulesData) // OperatorSchedules
+    const destinations = Array.isArray(locationData?.data) 
+        ? locationData.data 
+        : Array.isArray(locationData) 
+        ? locationData 
+        : []
 
-  console.log("destinations", destinations)
-  const [deleteTarget, setDeleteTarget] = useState(null)
-  const toast = useToast()
-  const busLabel = (busId) => operatorBuses?.find((b) => b.id === busId)?.plate ?? '—'
-  console.log("operatorBuses", operatorBuses)
-  console.log("destinations", destinations)
+    const schedules = Array.isArray(schedulesData?.data) 
+        ? schedulesData.data 
+        : Array.isArray(schedulesData) 
+        ? schedulesData 
+        : []
+
+    const routes = Array.isArray(routesData?.data) 
+        ? routesData.data 
+        : Array.isArray(routesData) 
+        ? routesData 
+        : []
+    const { data: operatorBuses, isBusLoading } = useGetOperatorBusesQuery(user?.id)
+
+    console.log("schedules", schedules)
+    console.log("destinations", destinations)
+    console.log("routes", routes)
+    const [deleteTarget, setDeleteTarget] = useState(null)
+    const toast = useToast()
+    const busLabel = (busId) => {
+        const b = schedules?.find((b) => b.bus_id === busId)
+        return b ? b.plate_number : '—'
+    }
+  
+    console.log("operatorBuses", operatorBuses)
+    console.log("destinations", destinations)
 
     const routeLabel = (routeId) => {
-        const r = OPERATOR_ROUTES.find((r) => r.id === routeId)
-        return r ? `${r.origin} → ${r.destination}` : '—'
+        const r = routes.find((r) => r.route_id === routeId)
+        return r ? `${r.origin_city} → ${r.location_city}` : '—'
     }
-  const { register, handleSubmit, reset } = useForm({
-    values: editing?.id
-      ? { ...editing, departureTime: editing.departureTime?.slice(0, 16) }
-      : { routeId: OPERATOR_ROUTES[0]?.id, busId: OPERATOR_BUSES[0]?.id, departureTime: '', status: 'scheduled' },
-  })
 
-  const openNew = () => {
-    reset({ routeId: OPERATOR_ROUTES[0]?.id, busId: OPERATOR_BUSES[0]?.id, departureTime: '', status: 'scheduled' })
-    setEditing({})
-  }
+    const { register, handleSubmit, reset } = useForm({
+        values: editing?.id
+          ? { ...editing, departure_time: editing.departure_time?.slice(0, 16) }
+          : { route_id: routes.route_id, bus_id: routes.bus_id, departure_time: '', departure_time: '', price: '', reccurence_type: '', status: 'scheduled' },
+    })
 
-  const onSubmit = (values) => {
-    const parsed = { ...values, departureTime: new Date(values.departureTime).toISOString() }
-    if (editing?.id) {
-      setSchedules((prev) => prev.map((s) => (s.id === editing.id ? { ...s, ...parsed } : s)))
-      toast.success('Schedule updated.')
-    } else {
-      setSchedules((prev) => [...prev, { id: `os${Date.now()}`, ...parsed }])
-      toast.success('Schedule created.')
+    const openNew = () => {
+        reset({ route_id: routes[0]?.id, bus_id: OPERATOR_BUSES[0]?.id, departure_time: '', arrival_time: '', price: '', reccurence_type: 'daily', bus: '', status: 'scheduled' })
+        setEditing({})
     }
-    setEditing(null)
-  }
 
-  const confirmDelete = () => {
-    setSchedules((prev) => prev.filter((s) => s.id !== deleteTarget.id))
-    toast.success('Schedule removed.')
-    setDeleteTarget(null)
-  }
+    const onSubmit = async (values) => {
+        const parsed = {
+            route_id: values.route_id,
+            departure_time: values.departure_time ? `${values.departure_time}:00` : null,
+            arrival_time: values.arrival_time ? `${values.arrival_time}:00` : null,
+            bus_id: values.bus_id,
+            price: values.price,
+            reccurence_type: values.reccurence_type,
+            status: values.status
+        }
 
-  const columns = [
-    { key: 'route', label: 'Route', render: (row) => routeLabel(row.routeId) },
-    { key: 'bus', label: 'Bus', render: (row) => busLabel(row.busId) },
-    {
-      key: 'departureTime',
-      label: 'Departure',
-      render: (row) => `${formatDate(row.departureTime)} · ${formatTime(row.departureTime)}`,
-    },
-    { key: 'status', label: 'Status', render: (row) => <Badge tone={STATUS_TONE[row.status]}>{row.status}</Badge> },
-    {
-      key: 'actions',
-      label: '',
-      render: (row) => (
-        <div className="flex gap-1">
-          <button onClick={() => setEditing(row)} className="rounded-lg p-1.5 text-fleet-gray hover:bg-fleet-black/5 hover:text-fleet-black">
-            <HiOutlinePencil className="h-4 w-4" />
-          </button>
-          <button onClick={() => setDeleteTarget(row)} className="rounded-lg p-1.5 text-fleet-gray hover:bg-state-error/10 hover:text-state-error">
-            <HiOutlineTrash className="h-4 w-4" />
-          </button>
-        </div>
-      ),
-    },
-  ]
+
+        if (editing?.id) {
+            setSchedules((prev) => prev.map((s) => (s.id === editing.id ? { ...s, ...parsed } : s)))
+            toast.success('Schedule updated.')
+        } else {
+            await createSchedule(parsed).unwrap()
+            toast.success('Schedule created.')
+        }
+        setEditing(null)
+    }
+
+    const confirmDelete = () => {
+        setSchedules((prev) => prev.filter((s) => s.id !== deleteTarget.id))
+        toast.success('Schedule removed.')
+        setDeleteTarget(null)
+    }
+
+    const columns = [
+        {   key: 'route', label: 'Route', render: (row) => routeLabel(row.route_id) },
+        {   key: 'bus', label: 'Bus', render: (row) => busLabel(row.bus_id) },
+        {
+            key: 'departure_time',
+            label: 'Departure',
+            render: (row) => row.departure_time,
+        },
+        {   key: 'status', label: 'Status', render: (row) => <Badge tone={STATUS_TONE[row.status]}>{row.status}</Badge> },
+        {   key: 'reccurence_type', label: 'Reccurence', render: (row) => <Badge tone={STATUS_TONE[row.reccurence_type]}>{row.reccurence_type}</Badge> },
+        {
+            key: 'actions',
+            label: '',
+            render: (row) => (
+                <div className="flex gap-1">
+                  <button onClick={() => setEditing(row)} className="rounded-lg p-1.5 text-fleet-gray hover:bg-fleet-black/5 hover:text-fleet-black">
+                    <HiOutlinePencil className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => setDeleteTarget(row)} className="rounded-lg p-1.5 text-fleet-gray hover:bg-state-error/10 hover:text-state-error">
+                    <HiOutlineTrash className="h-4 w-4" />
+                  </button>
+                </div>
+            ),
+        },
+    ]
 
   return (
     <div>
@@ -105,37 +141,37 @@ export default function OperatorSchedules() {
           Add schedule
         </Button>
       </div>
-{/*→*/}
+    {/*→*/}
       <div className="mt-6">
         <DataTable columns={columns} rows={schedules} emptyLabel="No schedules yet" />
       </div>
 
       <Modal isOpen={!!editing} onClose={() => setEditing(null)} title={editing?.id ? 'Edit schedule' : 'Add schedule'}>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+            <FormField label="Route" htmlFor="route_id">
+              <select id="route_id" className={inputClasses(false)} {...register('route_id')}>
+                <option value="">Select Route</option>
+                {routes?.map((r) => (
+                  <option key={r.route_id} value={r.route_id}>
+                    {r.origin_city} — {r.location_city}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="Price" htmlFor="price">
+              <input id="price" type="number" placeholder="e.g. 2,000" className={inputClasses(false)} {...register('price', { required: true })} />
+            </FormField>
             <div className="grid grid-cols-2 gap-3">
-                <FormField label="Origin" htmlFor="originId">
-                    <select id="originId" className={inputClasses(false)} {...register('originId')}>
-                      <option value="">Unassigned</option>
-                      {destinations?.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.city}
-                        </option>
-                      ))}
-                    </select>
-                  </FormField>
-                  <FormField label="Destination" htmlFor="destinationId">
-                    <select id="destinationId" className={inputClasses(false)} {...register('destinationId')}>
-                        <option value="">Unassigned</option>
-                      {destinations?.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.city}
-                        </option>
-                      ))}
-                    </select>
-                </FormField>
+              <FormField label="Departure" htmlFor="departure_time">
+                <input id="departure_time" type="time" placeholder="08:00 AM" className={inputClasses(false)} {...register('departure_time', { required: true })} />
+              </FormField>
+              <FormField label="Arrival" htmlFor="arrival_time">
+                <input id="arrival_time" type="time" placeholder="08:00 AM" className={inputClasses(false)} {...register('arrival_time', { required: true })} />
+              </FormField>
             </div>
-          <FormField label="Bus" htmlFor="busId">
-            <select id="busId" className={inputClasses(false)} {...register('busId')}>
+          <FormField label="Bus" htmlFor="bus_id">
+            <select id="bus_id" className={inputClasses(false)} {...register('bus_id')}>
+              <option value="">Select Bus</option>
               {operatorBuses?.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.plate_number} — {b.model}
@@ -143,18 +179,24 @@ export default function OperatorSchedules() {
               ))}
             </select>
           </FormField>
-          <FormField label="Departure" htmlFor="departureTime">
-            <input id="departureTime" type="datetime-local" className={inputClasses(false)} {...register('departureTime', { required: true })} />
+          <FormField label="Reccurence Type" htmlFor="reccurence_type">
+            <select id="reccurence_type" className={inputClasses(false)} {...register('reccurence_type')}>
+                <option value="">Select Reccurence Type</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
           </FormField>
           <FormField label="Status" htmlFor="status">
             <select id="status" className={inputClasses(false)} {...register('status')}>
-              <option value="scheduled">Scheduled</option>
-              <option value="departed">Departed</option>
-              <option value="cancelled">Cancelled</option>
+                <option value="">Select Status</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="departed">Departed</option>
+                <option value="cancelled">Cancelled</option>
             </select>
           </FormField>
           <Button type="submit" className="mt-1 w-full">
-            {editing?.id ? 'Save changes' : 'Add schedule'}
+                {editing?.id ? 'Save changes' : 'Add schedule'}
           </Button>
         </form>
       </Modal>

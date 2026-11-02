@@ -32,7 +32,7 @@ const baseQuery = fetchBaseQuery({
         if (token) {
             headers.set('Authorization', `Bearer ${token}`)
         }
-        console.log("auth token", token)
+        // console.log("auth token", token)
         headers.set('Accept', 'application/json')
         return headers
     },
@@ -41,8 +41,8 @@ const baseQuery = fetchBaseQuery({
 // Custom baseQuery wrapper to handle expired/invalid tokens globally
 const baseQueryWithReauth = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions)
-    console.log("result", result?.data?.data)
-    console.log("result", result?.data)
+    // console.log("result", result?.data?.data)
+    // console.log("result", result?.data)
     if (result?.error && result.error.status === 401) {
         // Token is expired or invalid -> log the user out
         api.dispatch(logout())
