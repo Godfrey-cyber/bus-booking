@@ -1,7 +1,10 @@
-import express from "express";
+import { Router } from "express";
+import { authenticate } from '../middleware/authenticate.js';
+import { authorize } from '../middleware/authorize.js';
 import { allTrips, oneTrip, createTrip } from "../controllers/trips.js";
 
-const router = express.Router();
+const router = Router();
+router.use(authenticate, authorize('Operator'));
 
 router.get("/all-trips", allTrips);
 // router.get("/my-bookings/:bookingID", myBookings);
