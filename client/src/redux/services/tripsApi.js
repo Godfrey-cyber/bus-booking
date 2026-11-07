@@ -54,6 +54,32 @@ export const tripsApi = apiSlice.injectEndpoints({
           : [{ type: 'Trips', id: 'LIST' }],
     }),
 
+    getOperatorTrips: builder.query({
+        query: ({ page = 1, limit = 20 } = {}) => ({
+            url: "/trips/operator-trips",
+            method: 'GET',
+            params: { page, limit },
+        }),
+      // Provides tags for cache invalidation
+        providesTags: (result) =>
+            result?.data
+            ? [
+                ...result.data.map(({ id }) => ({ type: 'Trips', id })),
+                { type: 'Trips', id: 'LIST' },
+            ]
+          : [{ type: 'Trips', id: 'LIST' }],
+    }),
+
+    createTrip: builder.mutation({
+        query: (tripData) => ({
+            url: "/trips/new-trip",
+            method: 'POST',
+            body: tripData,
+        }),
+        // Invalidates the list cache to automatically trigger a background refetch
+        invalidatesTags: [{ type: 'Trips', id: 'LIST' }],
+    }),
+
     // GET /trips/trip/:tripId — mirrors the /bookings/booking/:id convention your
     // backend already uses. Add this route on the API if it isn't there yet;
     // fetching the full list to find one trip doesn't scale past a handful of trips.
@@ -65,7 +91,7 @@ export const tripsApi = apiSlice.injectEndpoints({
   }),
 })
 
-export const { useSearchTripsQuery, useGetTripByIdQuery } = tripsApi
+export const { useSearchTripsQuery, useCreateTripMutation, useGetOperatorTripsQuery, useGetTripByIdQuery } = tripsApi
 
 
 

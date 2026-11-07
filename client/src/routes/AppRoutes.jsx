@@ -45,6 +45,7 @@ const OPERATOR_NAV_ITEMS = [
   { to: '/operator/destinations', label: 'Destinations', icon: <HiOutlineTruck className="h-4.5 w-4.5" /> },
   { to: '/operator/schedules', label: 'Schedules', icon: <HiOutlineClipboardList className="h-4.5 w-4.5" /> },
   { to: '/operator/routes', label: 'Routes', icon: <HiOutlineMap className="h-4.5 w-4.5" /> },
+  { to: '/operator/trips', label: 'Trips', icon: <HiOutlineMap className="h-4.5 w-4.5" /> },
   { to: '/operator/drivers', label: 'Drivers', icon: <HiOutlineIdentification className="h-4.5 w-4.5" /> },
   { to: '/operator/bookings', label: 'Bookings', icon: <HiOutlineTicket className="h-4.5 w-4.5" /> },
   { to: '/operator/scan', label: 'Scan tickets', icon: <HiOutlineQrcode className="h-4.5 w-4.5" /> },
@@ -87,6 +88,7 @@ const OperatorBuses = lazy(() => import('../pages/Dashboard/Operator/Buses'))
 const OperatorDestinations = lazy(() => import('../pages/Dashboard/Operator/Destinations'))
 const OperatorSchedules = lazy(() => import('../pages/Dashboard/Operator/Schedules'))
 const OperatorRoutes = lazy(() => import('../pages/Dashboard/Operator/Routes'))
+const OperatorTrips = lazy(() => import('../pages/Dashboard/Operator/Trips'))
 const OperatorDrivers = lazy(() => import('../pages/Dashboard/Operator/Drivers'))
 const OperatorBookings = lazy(() => import('../pages/Dashboard/Operator/Bookings'))
 const OperatorScanTickets = lazy(() => import('../pages/Dashboard/Operator/ScanTickets'))
@@ -159,6 +161,7 @@ export default function AppRoutes() {
                 <Route path="/operator/destinations" element={<OperatorDestinations />} />
                 <Route path="/operator/schedules" element={<OperatorSchedules />} />
                 <Route path="/operator/routes" element={<OperatorRoutes />} />
+                <Route path="/operator/trips" element={<OperatorTrips />} />
                 <Route path="/operator/drivers" element={<OperatorDrivers />} />
                 <Route path="/operator/bookings" element={<OperatorBookings />} />
                 <Route path="/operator/scan" element={<OperatorScanTickets />} />
