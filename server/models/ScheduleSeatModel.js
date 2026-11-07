@@ -9,6 +9,7 @@ export const ScheduleSeatModel = {
           `SELECT id FROM bus_seats WHERE bus_id = ?`,
           [bus_id]
         );
+        console.log("rawSeats", rawSeats)
         const busSeats = Array.isArray(rawSeats[0]) ? rawSeats[0] : rawSeats;
         console.log("busSeats:", busSeats)
 

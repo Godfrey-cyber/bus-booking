@@ -48,6 +48,7 @@ export const oneTrip = async (req, res) => {
 
 export const createTrip = async (req, res) => {
   	let transaction;
+  	const operator_id = req?.user.id
 
   	try {
 	    transaction = await pool.getConnection();
@@ -56,7 +57,6 @@ export const createTrip = async (req, res) => {
 	    const {
 	      	bus_id,
 	      	schedule_id,
-	      	route_id,
 	      	driver_id,
 	      	trip_date,
 	      	departure_time,
@@ -68,7 +68,8 @@ export const createTrip = async (req, res) => {
 	    console.log(req.body)
 	    // 1. Create the primary Trip record
 	    const result = await TripModel.create(
-		    {
+		    {	
+		    	operator_id,
 		        schedule_id,
 		        bus_id,
 		        driver_id,

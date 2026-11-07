@@ -1,4 +1,5 @@
-import { BusModel } from "../models/Bus.js";
+import { BusModel } from "../models/Bus.js"; 
+import { BusSeatModel } from "../models/BusSeat.js"; 
 import { asyncHandler } from '../utilities/asyncHandler.js';
 import { AppError } from '../utilities/AppError.js';
 
@@ -67,19 +68,19 @@ export const createBus = asyncHandler(async (req, res) => {
 	    	status, 
 	    	operator_id
 	    });
+
+	    const newBusId = result.insertId;
+
+	    // 2. Automatically generate and insert the seats on the backend
+        await BusSeatModel.generateForBus(newBusId, Number(capacity));
+
+        // 3. Fetch the newly created bus along with its generated seats to return to frontend
+        const completeBus = await BusModel.getByIdWithSeats(newBusId, operator_id);
+
 	    res.status(201).json({
 	        success: true,
-	        message: "Bus created successfully",
-	        data: {
-	            affectedRows: result.affectedRows,
-	            id: Number(result.insertId),
-		        plate_number,
-		        model,
-		        capacity,
-		        status,
-		        amenities,
-		        operator_id
-			}
+	        message: "Bus and seats configured successfully on the backend",
+	        data: completeBus
 	    });
 	} catch (error) {
 		if (error.code === 'ER_DUP_ENTRY' || error.errno === 1062) {

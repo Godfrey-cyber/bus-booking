@@ -145,6 +145,54 @@ export const TripModel = {
         }
     },
 
+    async getOperatorTrips(tripID) {
+        const conn = await pool.getConnection();
+        try {
+            const sql = `SELECT
+                t.id AS trip_id,
+                t.trip_date,
+                t.departure_time,
+                t.arrival_time,
+                t.price,
+                t.status,
+
+                b.id AS bus_id,
+                b.plate_number,
+                b.model AS bus_model,
+                b.capacity,
+                b.amenities,
+
+                o.id AS operator_id,
+                o.rating_avg,
+                o.name AS operator_name,
+
+                origin.city AS origin,
+                destination.city AS destination,
+
+                s.id AS schedule_id
+
+            FROM trips t
+
+            JOIN schedules s
+                ON t.schedule_id = s.id
+
+            JOIN locations destination
+                ON r.destination_id = destination.id
+
+            JOIN buses b
+                ON t.bus_id = b.id
+
+            JOIN operators o
+                ON b.operator_id = o.id
+
+            WHERE t.status = 'scheduled' AND t.id = ?
+            ORDER BY t.departure_time ASC`
+            return await conn.query(sql, [tripID])
+        } finally {
+            conn.release();
+        }
+    },
+
     async search({
         origin,
         destination,
@@ -287,12 +335,13 @@ export const TripModel = {
 
         const sql = `
             INSERT INTO trips (
-                schedule_id, bus_id, driver_id, trip_date, 
+                operator_id, schedule_id, bus_id, driver_id, trip_date, 
                 departure_time, arrival_time, price, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const params = [
+            tripData.operator_id,
             tripData.schedule_id,
             tripData.bus_id,
             tripData.driver_id || null,

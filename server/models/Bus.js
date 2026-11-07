@@ -71,6 +71,55 @@ export const BusModel = {
             total: totalRows[0]?.total || 0,
         };
     },
+
+    getByIdWithSeats: async (operatorID, busID) => {
+        const dataSql = `
+            SELECT 
+                b.id,
+                b.plate_number,
+                d.name,
+                b.model,
+                b.capacity,
+                b.status,
+                b.operator_id,
+                b.created_at
+            FROM buses b
+            LEFT JOIN drivers d ON
+            b.operator_id = d.operator_id
+            AND b.id = d.bus_id
+            WHERE b.operator_id = ? AND b.id = ?
+        `;
+
+        const countSql = `
+            SELECT COUNT(*) AS total 
+            FROM buses 
+            WHERE operator_id = ?
+        `;
+
+        // 1. Await both query promises
+        const [dataResult, countResult] = await Promise.all([
+            pool.query(dataSql, [operatorID, busID]),
+            pool.query(countSql, [operatorID]),
+        ]);
+
+        // 2. Safely extract rows (mysql2 returns [rows, fields])
+        const rows = Array.isArray(dataResult[0]) ? dataResult[0] : dataResult;
+        const totalRows = Array.isArray(countResult[0]) ? countResult[0] : countResult;
+
+        // 3. Parse amenities safely
+        const buses = (rows || []).map((bus) => ({
+            ...bus,
+            amenities: typeof bus.amenities === 'string' 
+                ? JSON.parse(bus.amenities || '[]') 
+                : (bus.amenities || []),
+        }));
+
+        return {
+            buses,
+            total: totalRows[0]?.total || 0,
+        };
+    },
+
     async create({ plate_number, model, capacity, amenities, status, operator_id }) {
         const conn = await pool.getConnection();
         try {
@@ -109,16 +158,13 @@ export const BusModel = {
     async findByPlateAndOperator(plate_number, operator_id) {
         const conn = await pool.getConnection();
         const sql = `
-            SELECT id 
+            SELECT 
+                id 
             FROM buses 
             WHERE operator_id = ? AND plate_number = ? AND deleted_at IS NULL 
             LIMIT 1
         `;
         const rows = await conn.query(sql, [operator_id, plate_number.trim().toUpperCase()]);
         return rows[0] || null;
-    }
+    },
 };
-
-// select s.id AS schedule_id, r.arrival_point, b.plate_number, d.name AS driver_name, s.departure_time, s.pri
-// ce, s.status from schedules s INNER JOIN routes r ON s.route_id = r.id INNER JOIN buses b ON s.bus_id = b.id INNER JOIN drivers
- // d ON s.driver_id = d.id;
